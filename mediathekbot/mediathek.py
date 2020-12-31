@@ -21,9 +21,9 @@ def query_feed(query: str) -> Generator[Tuple, None, None]:
     for entry in feed['entries']:
         entry_id = entry['id']
         title = entry['title']
-        author = entry['author']
+        author = entry['author'] if 'author' in entry else ''
         duration = entry['duration']
-        summary = entry['summary']
+        summary = entry['summary'] if 'summary' in entry else ''
         video_url = entry['link']
         website_url = entry['websiteurl']
         published = datetime.fromtimestamp(mktime(entry['published_parsed']))

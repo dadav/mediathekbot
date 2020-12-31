@@ -66,7 +66,7 @@ def cmd_list(update: Update, context: CallbackContext) -> None:
 
     txt = list()
     for entry in entries:
-        _, chat_id, query, data = entry
+        _, chat_id, query, _, data = entry
         txt.append('{} ({} hits)'.format(query, len(data)))
     update.message.reply_text('\n'.join(txt))
 
@@ -84,7 +84,7 @@ def cmd_del(update: Update, context: CallbackContext) -> int:
 
     options = list()
     for entry in entries:
-        entryid, chat_id, query, data = entry
+        entryid, chat_id, query, _, data = entry
         options.append([InlineKeyboardButton(
             '{} ({} hits)'.format(query, len(data)),
             callback_data=entryid)])
@@ -112,7 +112,7 @@ Use /list to list the already given search terms. You can delete them with /del.
 def fetcher(updater: Updater, backend: SqlBackend, config: Dict):
     while True:
         for entry in backend.load():
-            entryid, chat_id, query, data = entry
+            entryid, chat_id, query, init, data = entry
 
             try:
                 current_feed = query_feed(query)
@@ -123,16 +123,18 @@ def fetcher(updater: Updater, backend: SqlBackend, config: Dict):
             for video in current_feed:
                 video_id, title, author, duration, summary, video_url, website_url, published = video
                 if video_id not in data:
-                    updater.bot.send_message(chat_id,
-                                             'New video found!\n\n[{}]{}({})\nUploaded: {}\nUrl: {}'
-                                             .format(author,
-                                                     title,
-                                                     secs_to_hhmmss(duration),
-                                                     published.strftime('%m/%d/%Y, %H:%M:%S'),
-                                                     website_url))
-                    updater.bot.send_video(chat_id, video_url)
+                    if not init:
+                        updater.bot.send_message(chat_id,
+                                                 'New video found!\n\n[{}]{}({})\nUploaded: {}\nUrl: {}'
+                                                 .format(author,
+                                                         title,
+                                                         secs_to_hhmmss(int(duration)),
+                                                         published.strftime('%m/%d/%Y, %H:%M:%S'),
+                                                         video_url))
                     data.append(video_id)
             BACKEND.set_data(entryid, data)
+            if not init:
+                BACKEND.set_init(entryid)
             sleep(randint(0, 1))
         sleep(config['fetcher']['interval'] + randint(0, 10))
 

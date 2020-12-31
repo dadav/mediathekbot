@@ -25,6 +25,7 @@ class SqlBackend:
                                  id integer primary key not null,\
                                  chatid integer not null,\
                                  query text not null,\
+                                 init integer not null,\
                                  data blob not null)')
             self._connection.commit()
 
@@ -34,7 +35,7 @@ class SqlBackend:
         try:
             pickle_data = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
             with self._lock:
-                self._cursor.execute('insert into data values (null,?,?,?)', (chatid, query, sqlite3.Binary(pickle_data)))
+                self._cursor.execute('insert into data values (null,?,?,1,?)', (chatid, query, sqlite3.Binary(pickle_data)))
                 self._connection.commit()
             return True
         except sqlite3.Error as sql_err:
@@ -52,6 +53,16 @@ class SqlBackend:
             log.debug(sql_err)
         return False
 
+    def set_init(self, entryid: int) -> bool:
+        try:
+            with self._lock:
+                self._cursor.execute('update data set init=0 where id=?', (entryid,))
+                self._connection.commit()
+            return True
+        except sqlite3.Error as sql_err:
+            log.debug(sql_err)
+        return False
+
     def load(self, chatid: Optional[int] = None) -> List[Tuple]:
         try:
             with self._lock:
@@ -59,7 +70,7 @@ class SqlBackend:
                     result = self._cursor.execute('select * from data where chatid=?', (chatid,))
                 else:
                     result = self._cursor.execute('select * from data')
-                return [(*res[:-1], pickle.loads(res[-1][0])) for res in result.fetchall()]
+                return [(*res[:-1], pickle.loads(res[-1])) for res in result.fetchall()]
         except sqlite3.Error as sql_err:
             log.debug(sql_err)
         return list()
