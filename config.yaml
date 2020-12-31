@@ -1,0 +1,9 @@
+---
+fetcher:
+  interval: 60
+
+telegram:
+  token: token.txt
+
+sqlite:
+  path: db.sqlite
