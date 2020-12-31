@@ -4,6 +4,9 @@ fetcher:
 
 telegram:
   token: token.txt
+  spam_protection:
+    enabled: true
+    cooldown: 3
 
 sqlite:
   path: db.sqlite

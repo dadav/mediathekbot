@@ -18,18 +18,23 @@ log = logging.getLogger('rich')
 MULTICHOICE_CALLBACK = 0
 
 BACKEND = None
+SPAM_COOLDOWN = None
 
 SPAM_MEMORY: Dict[str, datetime] = dict()
 
 
 def is_spam(chatid):
+    global SPAM_COOLDOWN
+    if SPAM_COOLDOWN is None:
+        return False
+
     chatid = str(chatid)
 
     if chatid not in SPAM_MEMORY:
         SPAM_MEMORY[chatid] = datetime.utcnow()
         return False
 
-    if SPAM_MEMORY[chatid] + timedelta(seconds=5) > datetime.utcnow():
+    if SPAM_MEMORY[chatid] + timedelta(seconds=SPAM_COOLDOWN) > datetime.utcnow():
         return True
 
     SPAM_MEMORY[chatid] = datetime.utcnow()
@@ -140,7 +145,10 @@ def fetcher(updater: Updater, backend: SqlBackend, config: Dict):
 
 
 def start(token: str, backend: SqlBackend, config: Dict):
-    global BACKEND
+    global BACKEND, SPAM_COOLDOWN
+
+    spam_opts = config['telegram']['spam_protection']
+    SPAM_COOLDOWN = spam_opts['cooldown'] if spam_opts['enabled'] else None
 
     BACKEND = backend
 
