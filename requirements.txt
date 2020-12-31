@@ -6,6 +6,7 @@ colorama==0.4.4
 commonmark==0.9.1
 cryptography==3.3.1
 decorator==4.4.2
+feedparser==6.0.2
 idna==2.10
 pycparser==2.20
 Pygments==2.7.3
@@ -14,6 +15,7 @@ pytz==2020.5
 PyYAML==5.3.1
 requests==2.25.1
 rich==9.5.1
+sgmllib3k==1.0.0
 six==1.15.0
 tornado==6.1
 typing-extensions==3.7.4.3
