@@ -112,7 +112,7 @@ Use /list to list the already given search terms. You can delete them with /del.
 def fetcher(updater: Updater, backend: SqlBackend, config: Dict):
     while True:
         for entry in backend.load():
-            entryid, chat_id, query, init, data = entry
+            entryid, chat_id, query, first_query, data = entry
 
             try:
                 current_feed = query_feed(query)
@@ -123,7 +123,7 @@ def fetcher(updater: Updater, backend: SqlBackend, config: Dict):
             for video in current_feed:
                 video_id, title, author, duration, summary, video_url, website_url, published = video
                 if video_id not in data:
-                    if not init:
+                    if not first_query:
                         updater.bot.send_message(chat_id,
                                                  'New video found!\n\n[{}]{}({})\nUploaded: {}\nUrl: {}'
                                                  .format(author,
@@ -133,9 +133,9 @@ def fetcher(updater: Updater, backend: SqlBackend, config: Dict):
                                                          video_url))
                     data.append(video_id)
             BACKEND.set_data(entryid, data)
-            if not init:
+            if first_query:
                 BACKEND.set_init(entryid)
-            sleep(randint(0, 1))
+            sleep(0.5 + randint(0, 1))
         sleep(config['fetcher']['interval'] + randint(0, 10))
 
 
