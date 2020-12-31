@@ -130,8 +130,9 @@ def fetcher(updater: Updater, backend: SqlBackend, config: Dict):
                 if video_id not in data:
                     if not first_query:
                         updater.bot.send_message(chat_id,
-                                                 'New video found!\n\n[{}]{}({})\nUploaded: {}\nUrl: {}'
-                                                 .format(author,
+                                                 '[{}] New video!\n\n[{}] {}\nDuration: {}\nUpload date: {}\nUrl: {}'
+                                                 .format(query,
+                                                         author,
                                                          title,
                                                          secs_to_hhmmss(int(duration)),
                                                          published.strftime('%m/%d/%Y, %H:%M:%S'),
